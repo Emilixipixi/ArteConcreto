@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Paleta de marca como triplets RGB (se usan desde tailwind.config.js). Ajustar aqui. */
+:root {
+  --marca-vino: 107 31 59;
+  --marca-vino-oscuro: 74 20 40;
+  --marca-amarillo: 242 183 5;
+  --marca-amarillo-suave: 248 221 134;
+  --fondo: 250 248 245;
+  --superficie: 255 255 255;
+  --concreto-100: 241 239 236;
+  --concreto-300: 214 211 206;
+  --concreto-600: 111 106 100;
+  --texto: 42 38 35;
+  --ok: 46 125 79;
+  --aviso: 183 121 31;
+  --error: 180 35 24;
+  --info: 51 92 129;
+
+  /* Tipografia aproximada: cambiar aqui cuando se confirme la fuente real de la marca */
+  --fuente-titulos: 'Montserrat', system-ui, sans-serif;
+  --fuente-cuerpo: 'Inter', system-ui, sans-serif;
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-fondo text-texto antialiased;
+    font-family: var(--fuente-cuerpo);
+    font-size: 14px;
+  }
+  h1, h2, h3, h4 { font-family: var(--fuente-titulos); @apply text-marca-vino; }
+  table { font-variant-numeric: tabular-nums; }
+  :focus-visible { @apply outline outline-2 outline-offset-2 outline-marca-vino; }
+}
+
+@layer components {
+  .tarjeta { @apply bg-superficie border border-concreto-300 rounded-lg shadow-suave; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primario { @apply btn bg-marca-amarillo text-marca-vino-oscuro hover:brightness-95; }
+  .btn-secundario { @apply btn border border-marca-vino text-marca-vino bg-transparent hover:bg-marca-vino/5; }
+  .btn-peligro { @apply btn bg-error text-white hover:brightness-90; }
+  .btn-fantasma { @apply btn text-concreto-600 hover:bg-concreto-100; }
+  .campo { @apply w-full rounded-md border border-concreto-300 bg-superficie px-3 py-2 text-sm placeholder:text-concreto-600/70 focus:border-marca-vino focus:outline-none focus:ring-1 focus:ring-marca-vino; }
+  .etiqueta { @apply mb-1 block text-xs font-semibold text-concreto-600; }
+  .chip { @apply inline-flex items-center rounded-full bg-marca-amarillo-suave px-2 py-0.5 text-xs font-medium text-marca-vino-oscuro; }
+}
+
+/* Barra de desplazamiento fina para el menu lateral */
+.scroll-fino { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) transparent; }
+.scroll-fino::-webkit-scrollbar { width: 6px; }
+.scroll-fino::-webkit-scrollbar-track { background: transparent; }
+.scroll-fino::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 9999px; }
+.scroll-fino::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
