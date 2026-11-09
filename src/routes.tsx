@@ -20,6 +20,7 @@ import AprobacionCompras from './pages/compras/AprobacionCompras';
 import Tesoreria from './pages/tesoreria/Tesoreria';
 import FormularioPago from './pages/tesoreria/FormularioPago';
 import DetallePago from './pages/tesoreria/DetallePago';
+import AprobacionPagos from './pages/tesoreria/AprobacionPagos';
 import BandejaRecepcion from './pages/recepcion/BandejaRecepcion';
 import RecepcionOrden from './pages/recepcion/RecepcionOrden';
 import InventarioMP from './pages/materias/InventarioMP';
@@ -61,6 +62,8 @@ const RUTAS_FASE3 = [
   { path: '/tesoreria', element: protegida('/tesoreria', <Tesoreria />) },
   { path: '/tesoreria/nueva', element: protegida('/tesoreria', <FormularioPago />) },
   { path: '/tesoreria/:id', element: protegida('/tesoreria', <DetallePago />) },
+  { path: '/aprobacion-pagos', element: protegida('/aprobacion-pagos', <AprobacionPagos />) },
+  { path: '/aprobacion-pagos/:id', element: protegida('/aprobacion-pagos', <AprobacionPagos />) },
   { path: '/recepcion', element: protegida('/recepcion', <BandejaRecepcion />) },
   { path: '/recepcion/:id', element: protegida('/recepcion', <RecepcionOrden />) },
   { path: '/materias-primas', element: protegida('/materias-primas', <InventarioMP />) },

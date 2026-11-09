@@ -98,8 +98,10 @@ export function pendientesDelUsuario(e: Estado): Pendiente[] {
   if (tiene('tesoreria')) {
     for (const p of comprasPorPreparar(e))
       add({ numero: p.compra.numero, tipoDoc: 'Orden de compra', descripcion: p.tipo === 'anticipo' ? 'Preparar solicitud de anticipo' : p.motivo, prioridad: p.tipo === 'anticipo' ? 'alta' : 'media', antiguedadDias: diasDesde(p.compra.actualizadoEn), ruta: `/tesoreria/nueva?compra=${p.compra.id}`, modulo: '/tesoreria', estado: p.compra.estado });
-    for (const s of e.solicitudesPago.filter((x) => ['preparada', 'pendiente_aprobacion', 'aprobada', 'devuelta'].includes(x.estado)))
-      add({ numero: s.numero, tipoDoc: 'Solicitud de pago', descripcion: s.estado === 'aprobada' ? 'Aprobada: registrar pago y comprobante' : s.estado === 'devuelta' ? 'Devuelta: corregir' : s.estado === 'pendiente_aprobacion' ? 'Pago o anticipo por aprobar' : 'Preparada: enviar a aprobación', prioridad: 'alta', antiguedadDias: diasDesde(s.actualizadoEn), ruta: `/tesoreria/${s.id}`, modulo: '/tesoreria', estado: s.estado });
+    for (const s of e.solicitudesPago.filter((x) => ['preparada', 'pendiente_aprobacion', 'aprobada', 'devuelta'].includes(x.estado))) {
+      const porAprobar = s.estado === 'pendiente_aprobacion'; // se cuentan en el menu "Aprobar pagos"
+      add({ numero: s.numero, tipoDoc: 'Solicitud de pago', descripcion: s.estado === 'aprobada' ? 'Aprobada: registrar pago y comprobante' : s.estado === 'devuelta' ? 'Devuelta: corregir' : porAprobar ? 'Pago o anticipo por aprobar' : 'Preparada: enviar a aprobación', prioridad: 'alta', antiguedadDias: diasDesde(s.actualizadoEn), ruta: porAprobar ? `/aprobacion-pagos/${s.id}` : `/tesoreria/${s.id}`, modulo: porAprobar ? '/aprobacion-pagos' : '/tesoreria', estado: s.estado });
+    }
     for (const s of anticiposPorConciliar(e))
       add({ numero: s.numero, tipoDoc: 'Solicitud de pago', descripcion: 'Anticipo por conciliar tras la recepción', prioridad: 'media', antiguedadDias: diasDesde(s.actualizadoEn), ruta: `/tesoreria/${s.id}`, modulo: '/tesoreria', estado: s.estado });
     // Tesoreria ampliada: facturas por registrar, diferencias de cotejo, pagos vencidos y extracto sin conciliar

@@ -53,7 +53,7 @@ export const REGLAS_NOTIFICACION: Record<EventoNotif, ReglaNotif[]> = {
     r({ roles: ['almacen'], tipo: 'accion', titulo: (c) => `${c.numero} pendiente de recibir`, mensaje: () => 'Orden aprobada: queda esperando recepción en bodega.', docTipo: 'Compra', ruta: (c) => `/recepcion/${c.docId}` }),
     r({ roles: ['tesoreria'], condicion: (c) => !!c.conAnticipo, tipo: 'accion', titulo: (c) => `${c.numero} requiere anticipo`, mensaje: () => 'La orden es con anticipo: prepara la solicitud de pago.', docTipo: 'Compra', ruta: (c) => `/tesoreria?compra=${c.docId}` }),
   ],
-  pago_enviado: [r({ roles: ['tesoreria'], tipo: 'accion', titulo: (c) => `Pago ${c.numero} por aprobar`, mensaje: (c) => c.detalle ?? 'Tesorería envió una solicitud de pago.', docTipo: 'SolicitudPago', ruta: (c) => `/tesoreria?vista=aprobar&pago=${c.docId}` })],
+  pago_enviado: [r({ roles: ['tesoreria'], tipo: 'accion', titulo: (c) => `Pago ${c.numero} por aprobar`, mensaje: (c) => c.detalle ?? 'Tesorería envió una solicitud de pago.', docTipo: 'SolicitudPago', ruta: (c) => `/aprobacion-pagos/${c.docId}` })],
   pago_devuelto: [r({ roles: ['tesoreria'], tipo: 'alerta', titulo: (c) => `Pago ${c.numero} devuelto`, mensaje: (c) => c.detalle ?? 'La solicitud de pago fue devuelta u observada.', docTipo: 'SolicitudPago', ruta: (c) => `/tesoreria/${c.docId}` })],
   pago_aprobado: [r({ roles: ['tesoreria'], tipo: 'accion', titulo: (c) => `Pago ${c.numero} aprobado`, mensaje: () => 'Falta registrar el pago y adjuntar el comprobante.', docTipo: 'SolicitudPago', ruta: (c) => `/tesoreria/${c.docId}` })],
   anticipo_registrado: [

@@ -1,6 +1,6 @@
 // Definicion del menu lateral (tabla de la Fase 1). Los roles viven en permisos.ts (ROLES_POR_RUTA).
 import {
-  Banknote, BookOpen, Bell, Boxes, Factory, Gauge, GitBranch, Hammer, LayoutDashboard, LineChart, PackageCheck, PlugZap,
+  BadgeCheck, Banknote, BookOpen, Bell, Boxes, Factory, Gauge, GitBranch, Hammer, LayoutDashboard, LineChart, PackageCheck, PlugZap,
   ClipboardList, ClipboardCheck, ShoppingCart, ShieldCheck, Settings, ShoppingBag, Truck, ArrowLeftRight, Search, Map as IconoMapa, type LucideIcon,
 } from 'lucide-react';
 
@@ -15,6 +15,7 @@ export const MENU: ItemMenu[] = [
   { grupo: 'Operación', etiqueta: 'Gestión de compras', ruta: '/compras', icono: ShoppingCart, pantalla: 'P-06' },
   { grupo: 'Operación', etiqueta: 'Aprobación de compras', ruta: '/aprobacion-compras', icono: ShieldCheck, pantalla: 'P-07' },
   { grupo: 'Operación', etiqueta: 'Tesorería y pagos', ruta: '/tesoreria', icono: Banknote, pantalla: 'P-08' },
+  { grupo: 'Operación', etiqueta: 'Aprobar pagos', ruta: '/aprobacion-pagos', icono: BadgeCheck, pantalla: 'P-08' },
   { grupo: 'Operación', etiqueta: 'Recepción de almacén', ruta: '/recepcion', icono: PackageCheck, pantalla: 'P-09' },
   { grupo: 'Inventarios', etiqueta: 'Materias primas', ruta: '/materias-primas', icono: Boxes, pantalla: 'P-10' },
   { grupo: 'Inventarios', etiqueta: 'Fabricación', ruta: '/fabricacion', icono: Factory, pantalla: 'P-11' },

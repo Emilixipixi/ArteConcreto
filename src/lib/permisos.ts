@@ -129,6 +129,7 @@ export const ROLES_POR_RUTA: Record<string, RolId[]> = {
   '/compras': ['compras', 'admin'],
   '/aprobacion-compras': ['aprobador_compra', 'director', 'admin'],
   '/tesoreria': ['tesoreria', 'admin'],
+  '/aprobacion-pagos': ['tesoreria', 'admin'],
   '/recepcion': ['almacen', 'compras', 'admin'],
   '/materias-primas': ['almacen', 'produccion', 'compras', 'director', 'admin'],
   '/fabricacion': ['produccion', 'director', 'admin'],

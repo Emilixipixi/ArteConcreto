@@ -20,7 +20,8 @@ import { useMemo } from 'react';
 const BANDEJAS: { rol: RolId; ruta: string; etiqueta: string }[] = [
   { rol: 'director', ruta: '/director', etiqueta: 'Aprobar o rechazar solicitudes' },
   { rol: 'aprobador_compra', ruta: '/aprobacion-compras', etiqueta: 'Aprobar compras' },
-  { rol: 'tesoreria', ruta: '/tesoreria', etiqueta: 'Preparar, aprobar y registrar pagos' },
+  { rol: 'tesoreria', ruta: '/tesoreria', etiqueta: 'Preparar y registrar pagos' },
+  { rol: 'tesoreria', ruta: '/aprobacion-pagos', etiqueta: 'Aprobar pagos' },
   { rol: 'compras', ruta: '/compras', etiqueta: 'Gestionar compras' },
   { rol: 'almacen', ruta: '/recepcion', etiqueta: 'Recibir mercancía y confirmar salidas' },
   { rol: 'produccion', ruta: '/fabricacion', etiqueta: 'Registrar fabricaciones' },
