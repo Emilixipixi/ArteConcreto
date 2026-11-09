@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Mail, PackageX, PlugZap, Repeat, Send, ShoppingBag, Landmark } from 'lucide-react';
+import { Mail, PackageX, PlugZap, Repeat, Send, ShoppingBag, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import BotonConPermiso from '../../components/BotonConPermiso';
 import DataTable, { type Columna } from '../../components/DataTable';
@@ -25,7 +25,7 @@ export default function Conexiones() {
   const e = useStore();
   const u = useUsuarioActual()!;
   const prov = e.parametros.proveedorTienda;
-  const [detalle, setDetalle] = useState<null | 'tienda' | 'contable'>(null);
+  const [detalle, setDetalle] = useState<null | 'tienda' | 'crm'>(null);
   const [idExt, setIdExt] = useState(nuevoIdExterno());
   const [sku, setSku] = useState('');
   const [cant, setCant] = useState('1');
@@ -54,7 +54,7 @@ export default function Conexiones() {
 
   const tarjetas = [
     { k: 'tienda' as const, icono: ShoppingBag, titulo: `Tienda en línea (${prov})`, sub: 'Recepción de pedidos y sincronización de agotados', dato: `${eventosTienda.length} eventos - ${agotados.length} agotados reflejados`, sync: 'Última sincronización ficticia: hace 2 min' },
-    { k: 'contable' as const, icono: Landmark, titulo: 'Sistema contable externo', sub: 'Solo estados y reportes, sin asientos', dato: `${e.despachos.filter((d) => d.estadoAdministrativo === 'descargado_contabilidad').length} salidas marcadas como descargadas`, sync: 'Última sincronización ficticia: hace 15 min' },
+    { k: 'crm' as const, icono: Users, titulo: 'Conexión CRM', sub: 'Clientes y oportunidades de venta del CRM del cliente', dato: `${new Set(e.despachos.map((d) => d.cliente)).size} clientes con salidas registradas`, sync: 'Última sincronización ficticia: hace 15 min' },
   ];
   const columnas: Columna<EventoIntegracion>[] = [
     { clave: 'numero', titulo: 'Evento', render: (x) => <span className="font-semibold">{x.numero ?? x.id.toUpperCase()}</span> },
@@ -142,7 +142,7 @@ export default function Conexiones() {
           {detalle === 'tienda' && <>
             <p>Proveedor configurado: <strong>{prov}</strong> (editable en Administración, Parámetros).</p>
             <p>Recibe pedidos (descuenta una sola vez por ID externo) y refleja los productos agotados.</p></>}
-          {detalle === 'contable' && <p>Solo intercambia estados y reportes. El prototipo no genera asientos contables; "Marcar como descargado" solo cambia el estado administrativo de la salida.</p>}
+          {detalle === 'crm' && <p>Intercambia con el CRM del cliente los datos de clientes y los documentos de venta de referencia (cotizaciones y proyectos). El prototipo no escribe en ningún CRM real: es una conexión simulada con datos ilustrativos.</p>}
         </div>
       </Modal>
       <Modal abierto={contrato} titulo={`POST /api/v1/integraciones/${prov.toLowerCase()}/eventos`} ancho="max-w-xl" onCerrar={() => setContrato(false)} pie={<button className="btn-primario" onClick={() => setContrato(false)}>Cerrar</button>}>

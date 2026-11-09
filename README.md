@@ -28,7 +28,7 @@ Se elige en la pantalla de ingreso (sin contraseña). Cada usuario ve solo lo qu
 ## Recorridos de demostración
 
 La pantalla **Guía de demostración** (`/guia-demo`) trae los siete recorridos con guion y botones "Cambiar a [usuario] e ir a [pantalla]":
-D-01 solicitud y aprobación, D-02 compra con pago posterior, D-03 compra con anticipo, D-04 transformación en planta, D-05 traslado y salida, D-06 consulta de disponibilidad, D-07 venta de comercio electrónico, D-08 facturas y conciliación bancaria.
+D-01 solicitud y aprobación, D-02 compra con pago posterior, D-03 compra con anticipo, D-04 transformación en planta, D-05 traslado y salida, D-06 consulta de disponibilidad, D-07 venta de comercio electrónico, D-08 facturas, cuentas por pagar y pago.
 El **Mapa del sistema** (`/mapa-sistema`) muestra los flujos y las 18 pantallas con enlaces.
 
 ## Cómo reiniciar los datos

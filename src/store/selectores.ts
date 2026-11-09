@@ -1,3 +1,4 @@
+import { MOSTRAR_CONCILIACION_BANCARIA } from '../lib/funciones';
 // Selectores derivados. Son funciones puras sobre el estado; los hooks al final los memorizan.
 import { useMemo } from 'react';
 import { diasDesde } from '../lib/formato';
@@ -109,7 +110,7 @@ export function pendientesDelUsuario(e: Estado): Pendiente[] {
     for (const f of cuentasPorPagar(e).filter((x) => x.dias > 0 && x.tramo !== 'sin_factura').slice(0, 4))
       add({ numero: f.compraNumero, tipoDoc: 'Cuenta por pagar', descripcion: `Vencida hace ${f.dias} días: preparar el pago`, prioridad: 'alta', antiguedadDias: f.dias, ruta: `/tesoreria/nueva?compra=${f.compraId}`, modulo: '/tesoreria', estado: 'vencida' });
     const sinConc = e.movimientosBanco.filter((m) => m.estado === 'sin_conciliar');
-    if (sinConc.length > 0)
+    if (MOSTRAR_CONCILIACION_BANCARIA && sinConc.length > 0)
       add({ numero: 'Extracto', tipoDoc: 'Conciliación bancaria', descripcion: `${sinConc.length} movimientos del banco sin conciliar`, prioridad: 'media', antiguedadDias: diasDesde(sinConc[sinConc.length - 1].fecha), ruta: '/tesoreria?vista=banco', modulo: '/tesoreria', estado: 'sin_conciliar' });
   }
   if (tiene('almacen')) {

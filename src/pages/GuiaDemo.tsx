@@ -59,11 +59,11 @@ const RECORRIDOS: Recorrido[] = [
       { texto: 'Camila pide más unidades de las disponibles para ver el error y el reintento.', dice: 'Sin stock suficiente, el evento queda con error y se puede reintentar cuando haya existencias.', usuarioId: 'u-camila', ruta: '/conexiones', pantalla: 'Conexiones tienda' },
       { texto: 'Sergio revisa el producto agotado en el inventario de producto terminado.', dice: 'El agotado se refleja en inventario, en la tienda simulada y en las alertas.', usuarioId: 'u-sergio', ruta: '/producto-terminado', pantalla: 'Producto terminado' },
     ] },
-  { id: 'D-08', titulo: 'Facturas y conciliación bancaria', objetivo: 'Tesorería registra la factura del proveedor, la coteja con lo recibido, la paga desde una cuenta y concilia el extracto del banco.',
+  { id: 'D-08', titulo: 'Facturas, cuentas por pagar y pago', objetivo: 'Tesorería registra la factura del proveedor, la coteja con lo recibido, revisa lo que se debe y aprueba y registra el pago.',
     pasos: [
       { texto: 'Paola abre Facturas, elige una compra recibida sin factura y registra la factura (número, fechas, total y archivo).', dice: 'El sistema coteja orden, recepción y factura. Si el total facturado difiere de lo recibido, queda con diferencia y se puede aceptar, reclamar o anular.', usuarioId: 'u-paola', ruta: '/tesoreria?vista=facturas', pantalla: 'Tesorería - Facturas' },
       { texto: 'Paola revisa Cuentas por pagar y prepara el pago desde una obligación abierta.', dice: 'Muestra antigüedad de saldos, vencimientos de los próximos 30 días y saldos por proveedor. El pago se registra con su cuenta de origen.', usuarioId: 'u-paola', ruta: '/tesoreria?vista=cxp', pantalla: 'Tesorería - Cuentas por pagar' },
-      { texto: 'Paola importa el extracto (simulado) y concilia cada movimiento con su pago, o lo registra como gasto bancario.', dice: 'La diferencia entre banco y libros se explica con pagos en tránsito y movimientos sin identificar. Conciliar puede deshacerse.', usuarioId: 'u-paola', ruta: '/tesoreria?vista=banco', pantalla: 'Tesorería - Conciliación bancaria' },
+      { texto: 'Paola abre Pendientes de aprobación y pulsa "Aprobar pago"; luego, en Aprobados, pulsa "Registrar pago" y adjunta el comprobante.', dice: 'La misma persona de Tesorería prepara, aprueba y registra el pago; cada paso queda en el historial y no modifica el stock.', usuarioId: 'u-paola', ruta: '/tesoreria', pantalla: 'Tesorería - Pagos' },
       { texto: 'Paola consulta el estado de cuenta de un proveedor.', dice: 'Libro cronológico de facturas y pagos con saldo acumulado.', usuarioId: 'u-paola', ruta: '/tesoreria?vista=proveedores', pantalla: 'Tesorería - Estado de cuenta' },
     ] },
 ];

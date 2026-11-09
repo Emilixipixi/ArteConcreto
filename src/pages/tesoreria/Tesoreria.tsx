@@ -1,3 +1,4 @@
+import { MOSTRAR_CONCILIACION_BANCARIA } from '../../lib/funciones';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, CalendarClock, Landmark, Receipt, Scale, Users, Wallet } from 'lucide-react';
@@ -20,7 +21,7 @@ import { useStore } from '../../store/useStore';
 
 type Vista = 'pagos' | 'facturas' | 'cxp' | 'banco' | 'proveedores';
 type Pestana = 'preparar' | 'pendientes' | 'aprobados' | 'anticipados' | 'cerrados';
-interface Fila { clave: string; numero: string; compraId: string; compraNumero: string; proveedor: string; concepto: string; importe: number; estado: string; fecha: string; ruta: string; accion?: 'preparar' }
+interface Fila { clave: string; numero: string; compraId: string; compraNumero: string; proveedor: string; concepto: string; importe: number; estado: string; fecha: string; ruta: string; accion?: 'preparar' | 'aprobar' | 'pagar' }
 
 // P-08 Tesoreria y pagos (RF-18 a RF-23)
 export default function Tesoreria() {
@@ -31,12 +32,12 @@ export default function Tesoreria() {
   const [pestana, setPestana] = useState<Pestana>('preparar');
   const compraParam = params.get('compra');
   const vistaParam = params.get('vista');
-  const [vista, setVista] = useState<Vista>((['pagos', 'facturas', 'cxp', 'banco', 'proveedores'] as const).find((v) => v === vistaParam) ?? 'pagos');
+  const [vista, setVista] = useState<Vista>((['pagos', 'facturas', 'cxp', ...(MOSTRAR_CONCILIACION_BANCARIA ? ['banco' as const] : []), 'proveedores'] as const).find((v) => v === vistaParam) ?? 'pagos');
   const [facturaDe, setFacturaDe] = useState<string | undefined>(params.get('factura') ?? undefined);
   const kpi = useMemo(() => kpisTesoreria(e), [e]);
   useEffect(() => { if (vista !== 'facturas') setFacturaDe(undefined); }, [vista]);
   // Enlaces de pendientes y notificaciones: /tesoreria?vista=banco o ?vista=facturas&factura=ID
-  useEffect(() => { const v = (['pagos', 'facturas', 'cxp', 'banco', 'proveedores'] as const).find((x) => x === vistaParam); if (v) setVista(v); setFacturaDe(params.get('factura') ?? undefined); }, [vistaParam, params]);
+  useEffect(() => { const v = (['pagos', 'facturas', 'cxp', ...(MOSTRAR_CONCILIACION_BANCARIA ? ['banco' as const] : []), 'proveedores'] as const).find((x) => x === vistaParam); if (v) setVista(v); setFacturaDe(params.get('factura') ?? undefined); }, [vistaParam, params]);
 
   const nombreProv = (cid: string) => e.proveedores.find((p) => p.id === e.compras.find((c) => c.id === cid)?.proveedorId)?.nombre ?? '-';
   const numeroCompra = (cid: string) => e.compras.find((c) => c.id === cid)?.numero ?? cid;
@@ -57,8 +58,8 @@ export default function Tesoreria() {
     const conciliables = new Set(anticiposPorConciliar(e).map((s) => s.id));
     return {
       preparar,
-      pendientes: e.solicitudesPago.filter((s) => s.estado === 'pendiente_aprobacion').map(deSp),
-      aprobados: e.solicitudesPago.filter((s) => s.estado === 'aprobada').map(deSp),
+      pendientes: e.solicitudesPago.filter((s) => s.estado === 'pendiente_aprobacion').map((s) => ({ ...deSp(s), accion: 'aprobar' as const })),
+      aprobados: e.solicitudesPago.filter((s) => s.estado === 'aprobada').map((s) => ({ ...deSp(s), accion: 'pagar' as const })),
       anticipados: e.solicitudesPago.filter((s) => s.tipo === 'anticipo' && s.estado === 'pagada').map((s) => ({ ...deSp(s), concepto: conciliables.has(s.id) ? 'Anticipo: listo para conciliar' : 'Anticipo pagado: esperando recepción' })),
       cerrados: e.solicitudesPago.filter((s) => s.estado === 'conciliada' || (s.estado === 'pagada' && s.tipo === 'pago_final')).map(deSp),
     } as Record<Pestana, Fila[]>;
@@ -79,6 +80,10 @@ export default function Tesoreria() {
     {
       clave: 'acciones', titulo: 'Acciones', render: (f) => f.accion === 'preparar'
         ? <BotonConPermiso variante="primario" className="!py-1 text-xs" permitido={puede(u, 'pago.preparar')} motivo="Solo Tesorería prepara solicitudes de pago" onClick={() => navigate(f.ruta)}>Preparar solicitud de pago</BotonConPermiso>
+        : f.accion === 'aprobar'
+        ? <BotonConPermiso variante="primario" className="!py-1 text-xs" permitido={puede(u, 'pago.aprobar')} motivo="Solo Tesorería aprueba pagos" onClick={() => navigate(`${f.ruta}?accion=aprobar`)}>Aprobar pago</BotonConPermiso>
+        : f.accion === 'pagar'
+        ? <BotonConPermiso variante="primario" className="!py-1 text-xs" permitido={puede(u, 'pago.registrar')} motivo="Solo Tesorería registra pagos" onClick={() => navigate(`${f.ruta}?accion=pagar`)}>Registrar pago</BotonConPermiso>
         : <Link className="btn-secundario !py-1 text-xs" to={f.ruta}>Abrir</Link>,
     },
   ];
@@ -87,7 +92,7 @@ export default function Tesoreria() {
     { k: 'pagos', t: 'Pagos y anticipos', icono: Wallet, n: grupos.preparar.length + grupos.pendientes.length + grupos.aprobados.length },
     { k: 'facturas', t: 'Facturas', icono: Receipt, n: kpi.sinFactura + kpi.conDiferencia },
     { k: 'cxp', t: 'Cuentas por pagar', icono: CalendarClock },
-    { k: 'banco', t: 'Conciliación bancaria', icono: Landmark, n: kpi.sinConciliar },
+    ...(MOSTRAR_CONCILIACION_BANCARIA ? [{ k: 'banco' as Vista, t: 'Conciliación bancaria', icono: Landmark, n: kpi.sinConciliar }] : []),
     { k: 'proveedores', t: 'Estado de cuenta', icono: Users },
   ];
   const tarjetasKpi: { t: string; v: string; tono: string; icono: typeof Wallet; ir: Vista }[] = [
@@ -95,7 +100,7 @@ export default function Tesoreria() {
     { t: 'Vencido', v: formatearMoneda(kpi.vencido), tono: kpi.vencido > 0 ? 'text-error' : 'text-marca-vino', icono: AlertTriangle, ir: 'cxp' },
     { t: 'Vence en 7 días', v: formatearMoneda(kpi.porVencer7), tono: kpi.porVencer7 > 0 ? 'text-aviso' : 'text-marca-vino', icono: CalendarClock, ir: 'cxp' },
     { t: 'Facturas por registrar', v: String(kpi.sinFactura), tono: kpi.sinFactura > 0 ? 'text-aviso' : 'text-marca-vino', icono: Receipt, ir: 'facturas' },
-    { t: 'Movimientos sin conciliar', v: String(kpi.sinConciliar), tono: kpi.sinConciliar > 0 ? 'text-aviso' : 'text-marca-vino', icono: Landmark, ir: 'banco' },
+    ...(MOSTRAR_CONCILIACION_BANCARIA ? [{ t: 'Movimientos sin conciliar', v: String(kpi.sinConciliar), tono: kpi.sinConciliar > 0 ? 'text-aviso' : 'text-marca-vino', icono: Landmark, ir: 'banco' as Vista }] : []),
   ];
 
   return (
@@ -118,7 +123,7 @@ export default function Tesoreria() {
       </div>
       {vista === 'facturas' && <TabFacturas compraInicial={facturaDe} key={facturaDe ?? 'f'} />}
       {vista === 'cxp' && <TabCuentasPorPagar onRegistrarFactura={(id) => { setFacturaDe(id); setVista('facturas'); }} />}
-      {vista === 'banco' && <TabConciliacionBanco />}
+      {MOSTRAR_CONCILIACION_BANCARIA && vista === 'banco' && <TabConciliacionBanco />}
       {vista === 'proveedores' && <TabEstadoCuenta />}
       {vista === 'pagos' && (<>
       <NotaReglasPago />

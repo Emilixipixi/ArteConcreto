@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle2, FileText, Paperclip, RotateCcw, Scale } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { MOSTRAR_CONCILIACION_BANCARIA } from '../../lib/funciones';
 import BotonConPermiso from '../../components/BotonConPermiso';
 import EstadoBadge from '../../components/EstadoBadge';
 import EstadoVacio from '../../components/EstadoVacio';
@@ -35,6 +36,15 @@ export default function DetallePago() {
   const [referencia, setReferencia] = useState('');
   const [comprobante, setComprobante] = useState('');
   const [cuentaId, setCuentaId] = useState(e.cuentasBancarias[0]?.id ?? '');
+
+  // Atajo desde la lista de Tesoreria: /tesoreria/ID?accion=aprobar | pagar abre directamente la confirmacion
+  const [paramsUrl] = useSearchParams();
+  const accionUrl = paramsUrl.get('accion');
+  useEffect(() => {
+    if (!sp) return;
+    if (accionUrl === 'aprobar' && sp.estado === 'pendiente_aprobacion' && reglaSegregacion(u, sp, 'pago.aprobar').permitido) setModal('aprobar');
+    if (accionUrl === 'pagar' && sp.estado === 'aprobada' && reglaSegregacion(u, sp, 'pago.registrar').permitido) setModal('pagar');
+  }, [accionUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!sp) return <EstadoVacio titulo="Solicitud de pago no encontrada" accion={<Link className="btn-primario" to="/tesoreria">Volver a Tesorería</Link>} />;
   const compra = e.compras.find((c) => c.id === sp.compraId)!;
@@ -142,7 +152,7 @@ export default function DetallePago() {
                 <div><p className="etiqueta">Medio</p><span className="capitalize">{pago.medio}</span></div>
                 <div><p className="etiqueta">Referencia</p>{pago.referencia ?? '-'}</div>
                 {pago.cuentaId && <div><p className="etiqueta">Cuenta de origen</p>{(() => { const c = e.cuentasBancarias.find((x) => x.id === pago.cuentaId); return c ? `${c.banco} ****${c.ultimos4}` : '-'; })()}</div>}
-                {pago.cuentaId && <div><p className="etiqueta">Extracto bancario</p>{e.movimientosBanco.find((m) => m.pagoId === pago.id) ? <EstadoBadge estado="conciliado" /> : <span className="text-xs text-concreto-600">Aún no aparece en el extracto</span>}</div>}
+                {MOSTRAR_CONCILIACION_BANCARIA && pago.cuentaId && <div><p className="etiqueta">Extracto bancario</p>{e.movimientosBanco.find((m) => m.pagoId === pago.id) ? <EstadoBadge estado="conciliado" /> : <span className="text-xs text-concreto-600">Aún no aparece en el extracto</span>}</div>}
               </div>
               <p className="mt-2 inline-flex items-center gap-2 rounded-md border border-concreto-300 bg-concreto-100 px-3 py-2"><FileText size={16} className="text-marca-vino" aria-hidden="true" />{pago.comprobante} <span className="text-xs text-concreto-600">- registrado por {nombre(pago.registradoPor)}</span></p>
             </div>
