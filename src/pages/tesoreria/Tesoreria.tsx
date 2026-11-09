@@ -1,7 +1,7 @@
 import { MOSTRAR_CONCILIACION_BANCARIA } from '../../lib/funciones';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-import { AlertTriangle, CalendarClock, Landmark, Receipt, Scale, Users, Wallet } from 'lucide-react';
+import { AlertTriangle, BadgeCheck, CalendarClock, Landmark, Receipt, Scale, Users, Wallet } from 'lucide-react';
 import BotonConPermiso from '../../components/BotonConPermiso';
 import { type Columna } from '../../components/DataTable';
 import DataTable from '../../components/DataTable';
@@ -13,31 +13,35 @@ import { puede } from '../../lib/permisos';
 import { useUsuarioActual } from '../../store/selectores';
 import { anticiposPorConciliar, comprasPorPreparar } from '../../store/selectoresFase3';
 import { kpisTesoreria } from '../../store/selectoresTesoreria';
+import TabAprobarPagos from './TabAprobarPagos';
 import TabConciliacionBanco from './TabConciliacionBanco';
 import TabCuentasPorPagar from './TabCuentasPorPagar';
 import TabEstadoCuenta from './TabEstadoCuenta';
 import TabFacturas from './TabFacturas';
 import { useStore } from '../../store/useStore';
 
-type Vista = 'pagos' | 'facturas' | 'cxp' | 'banco' | 'proveedores';
+type Vista = 'pagos' | 'aprobar' | 'facturas' | 'cxp' | 'banco' | 'proveedores';
 type Pestana = 'preparar' | 'pendientes' | 'aprobados' | 'anticipados' | 'cerrados';
 interface Fila { clave: string; numero: string; compraId: string; compraNumero: string; proveedor: string; concepto: string; importe: number; estado: string; fecha: string; ruta: string; accion?: 'preparar' | 'aprobar' | 'pagar' }
 
 // P-08 Tesoreria y pagos (RF-18 a RF-23)
 export default function Tesoreria() {
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const u = useUsuarioActual()!;
   const e = useStore();
   const [pestana, setPestana] = useState<Pestana>('preparar');
   const compraParam = params.get('compra');
   const vistaParam = params.get('vista');
-  const [vista, setVista] = useState<Vista>((['pagos', 'facturas', 'cxp', ...(MOSTRAR_CONCILIACION_BANCARIA ? ['banco' as const] : []), 'proveedores'] as const).find((v) => v === vistaParam) ?? 'pagos');
+  const pagoParam = params.get('pago') ?? undefined;
+  const VISTAS: readonly Vista[] = ['pagos', 'aprobar', 'facturas', 'cxp', ...(MOSTRAR_CONCILIACION_BANCARIA ? ['banco' as const] : []), 'proveedores'];
+  const [vista, setVista] = useState<Vista>(VISTAS.find((v) => v === vistaParam) ?? 'pagos');
   const [facturaDe, setFacturaDe] = useState<string | undefined>(params.get('factura') ?? undefined);
   const kpi = useMemo(() => kpisTesoreria(e), [e]);
   useEffect(() => { if (vista !== 'facturas') setFacturaDe(undefined); }, [vista]);
-  // Enlaces de pendientes y notificaciones: /tesoreria?vista=banco o ?vista=facturas&factura=ID
-  useEffect(() => { const v = (['pagos', 'facturas', 'cxp', ...(MOSTRAR_CONCILIACION_BANCARIA ? ['banco' as const] : []), 'proveedores'] as const).find((x) => x === vistaParam); if (v) setVista(v); setFacturaDe(params.get('factura') ?? undefined); }, [vistaParam, params]);
+  // Enlaces de pendientes y notificaciones: /tesoreria?vista=banco, ?vista=facturas&factura=ID o ?vista=aprobar&pago=ID
+  useEffect(() => { const v = VISTAS.find((x) => x === vistaParam); if (v) setVista(v); setFacturaDe(params.get('factura') ?? undefined); }, [vistaParam, params]); // eslint-disable-line react-hooks/exhaustive-deps
+  const seleccionarPago = (id?: string) => setParams(id ? { vista: 'aprobar', pago: id } : { vista: 'aprobar' });
 
   const nombreProv = (cid: string) => e.proveedores.find((p) => p.id === e.compras.find((c) => c.id === cid)?.proveedorId)?.nombre ?? '-';
   const numeroCompra = (cid: string) => e.compras.find((c) => c.id === cid)?.numero ?? cid;
@@ -81,7 +85,7 @@ export default function Tesoreria() {
       clave: 'acciones', titulo: 'Acciones', render: (f) => f.accion === 'preparar'
         ? <BotonConPermiso variante="primario" className="!py-1 text-xs" permitido={puede(u, 'pago.preparar')} motivo="Solo Tesorería prepara solicitudes de pago" onClick={() => navigate(f.ruta)}>Preparar solicitud de pago</BotonConPermiso>
         : f.accion === 'aprobar'
-        ? <BotonConPermiso variante="primario" className="!py-1 text-xs" permitido={puede(u, 'pago.aprobar')} motivo="Solo Tesorería aprueba pagos" onClick={() => navigate(`${f.ruta}?accion=aprobar`)}>Aprobar pago</BotonConPermiso>
+        ? <BotonConPermiso variante="primario" className="!py-1 text-xs" permitido={puede(u, 'pago.aprobar')} motivo="Solo Tesorería aprueba pagos" onClick={() => seleccionarPago(f.clave)}>Aprobar pago</BotonConPermiso>
         : f.accion === 'pagar'
         ? <BotonConPermiso variante="primario" className="!py-1 text-xs" permitido={puede(u, 'pago.registrar')} motivo="Solo Tesorería registra pagos" onClick={() => navigate(`${f.ruta}?accion=pagar`)}>Registrar pago</BotonConPermiso>
         : <Link className="btn-secundario !py-1 text-xs" to={f.ruta}>Abrir</Link>,
@@ -90,6 +94,7 @@ export default function Tesoreria() {
 
   const vistas: { k: Vista; t: string; icono: typeof Wallet; n?: number }[] = [
     { k: 'pagos', t: 'Pagos y anticipos', icono: Wallet, n: grupos.preparar.length + grupos.pendientes.length + grupos.aprobados.length },
+    { k: 'aprobar', t: 'Aprobar pagos', icono: BadgeCheck, n: grupos.pendientes.length },
     { k: 'facturas', t: 'Facturas', icono: Receipt, n: kpi.sinFactura + kpi.conDiferencia },
     { k: 'cxp', t: 'Cuentas por pagar', icono: CalendarClock },
     ...(MOSTRAR_CONCILIACION_BANCARIA ? [{ k: 'banco' as Vista, t: 'Conciliación bancaria', icono: Landmark, n: kpi.sinConciliar }] : []),
@@ -121,6 +126,7 @@ export default function Tesoreria() {
             {!!v.n && <span className={`rounded-full px-1.5 text-xs ${vista === v.k ? 'bg-white/20' : 'bg-marca-amarillo-suave text-marca-vino-oscuro'}`}>{v.n}</span>}
           </button>))}
       </div>
+      {vista === 'aprobar' && <TabAprobarPagos seleccion={pagoParam} onSeleccionar={seleccionarPago} />}
       {vista === 'facturas' && <TabFacturas compraInicial={facturaDe} key={facturaDe ?? 'f'} />}
       {vista === 'cxp' && <TabCuentasPorPagar onRegistrarFactura={(id) => { setFacturaDe(id); setVista('facturas'); }} />}
       {MOSTRAR_CONCILIACION_BANCARIA && vista === 'banco' && <TabConciliacionBanco />}
